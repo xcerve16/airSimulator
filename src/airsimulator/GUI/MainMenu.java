@@ -8,15 +8,11 @@ package airsimulator.GUI;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Locale;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -77,7 +73,6 @@ public class MainMenu extends JFrame{
         public void actionPerformed(ActionEvent e) {
             HelpWindow helpWindow = new HelpWindow();
         }
-
     }
 
     private class Exit implements ActionListener {
@@ -91,7 +86,6 @@ public class MainMenu extends JFrame{
                 System.exit(1);
             }
         }
-
     }
 
     private class PlaySimulation implements ActionListener {
