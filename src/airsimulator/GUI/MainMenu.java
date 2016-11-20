@@ -6,12 +6,19 @@
 package airsimulator.GUI;
 
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -28,6 +35,8 @@ public class MainMenu extends JFrame{
             
     JPanel mainPanel;
     
+    Platno platno;
+    
     JButton spustit_aplikaci;
     JButton napoveda;
     JButton ukoncit;
@@ -35,8 +44,9 @@ public class MainMenu extends JFrame{
     public MainMenu(){
         super("Úvodní nabídka");
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        super.setLayout(new GridBagLayout());
+        super.setLayout(null);
         
+        this.platno = new Platno();
         this.mainPanel = new JPanel();
         this.mainPanel.setLayout(new GridBagLayout());
         
@@ -56,15 +66,40 @@ public class MainMenu extends JFrame{
         this.mainPanel.add(this.napoveda, this.gridBagConstraints);
         this.mainPanel.add(this.ukoncit, this.gridBagConstraints);
         
-        this.mainBagConstraints = new GridBagConstraints();
-        this.mainBagConstraints.anchor = GridBagConstraints.CENTER;
+        
+        this.platno.setLocation(0,0);
+        this.platno.setSize(500,500);
+        
+        this.mainPanel.setLocation(300,200);
+        this.mainPanel.setSize(150,100);
+        
+        super.add(this.platno);
         super.add(this.mainPanel, this.mainBagConstraints);
                 
-        super.setSize(500, 500);
+        super.setSize(505, 500);
         super.setLocation(dim.width/2-super.getSize().width/2, dim.height/2-super.getSize().height/2);
 
+        super.setResizable(false);
         super.setVisible(true);
         super.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+    private class Platno extends JPanel{
+
+        @Override
+        public void paint(Graphics g){
+            BufferedImage img;
+            try {
+                img = ImageIO.read(new File("uvodniMenu.jpg"));
+                g.drawImage(img, 0, 0, 505, 505, null);
+
+            } catch (IOException ex) {
+                Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            spustit_aplikaci.repaint();
+            napoveda.repaint();
+            ukoncit.repaint();
+        }
     }
 
     private class ViewHelp implements ActionListener {
