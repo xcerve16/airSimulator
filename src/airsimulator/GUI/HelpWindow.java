@@ -44,7 +44,7 @@ public class HelpWindow extends JFrame{
                 this.text.setText(originalText + line+ "<br>");
             }
         } catch (IOException ex ) {
-           this.text.setText("Momentálně nápověda není k dispozici\n");
+           this.text.setText("Momentálně néni nápověda k dipozici\n");
         }
         
         this.nadpis.setSize(500,50);

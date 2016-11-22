@@ -115,7 +115,7 @@ public class MainMenu extends JFrame{
         @Override
         public void actionPerformed(ActionEvent e) {
             Object[] opt = {"Ano","Ne"};
-            int answer = JOptionPane.showOptionDialog(null,"Opravdu chcete ukončit aplikaci?", 
+            int answer = JOptionPane.showOptionDialog(null,"Opravdu chcete ukonÄ�it aplikaci?", 
                     "Ukončení aplikace",JOptionPane.YES_NO_OPTION,JOptionPane.QUESTION_MESSAGE, null,opt, opt[0]);
             if( answer == 0){
                 System.exit(1);
