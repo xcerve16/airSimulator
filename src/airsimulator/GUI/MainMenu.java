@@ -16,8 +16,6 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -94,7 +92,7 @@ public class MainMenu extends JFrame{
                 g.drawImage(img, 0, 0, 505, 505, null);
 
             } catch (IOException ex) {
-                Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex);
+                //System.err.println("Cann´t input image read in main menu.");
             }
             spustit_aplikaci.repaint();
             napoveda.repaint();
@@ -115,7 +113,7 @@ public class MainMenu extends JFrame{
         @Override
         public void actionPerformed(ActionEvent e) {
             Object[] opt = {"Ano","Ne"};
-            int answer = JOptionPane.showOptionDialog(null,"Opravdu chcete ukonÄ�it aplikaci?", 
+            int answer = JOptionPane.showOptionDialog(null,"Opravdu chcete ukončit aplikaci?", 
                     "Ukončení aplikace",JOptionPane.YES_NO_OPTION,JOptionPane.QUESTION_MESSAGE, null,opt, opt[0]);
             if( answer == 0){
                 System.exit(1);
