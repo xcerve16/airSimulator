@@ -64,7 +64,6 @@ public class MainMenu extends JFrame{
         this.mainPanel.add(this.napoveda, this.gridBagConstraints);
         this.mainPanel.add(this.ukoncit, this.gridBagConstraints);
         
-        
         this.platno.setLocation(0,0);
         this.platno.setSize(500,500);
         
@@ -88,7 +87,7 @@ public class MainMenu extends JFrame{
         public void paint(Graphics g){
             BufferedImage img;
             try {
-                img = ImageIO.read(new File("uvodniMenu.jpg"));
+                img = ImageIO.read(new File("resources/uvodniMenu.jpg"));
                 g.drawImage(img, 0, 0, 505, 505, null);
 
             } catch (IOException ex) {
