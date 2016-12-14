@@ -37,13 +37,15 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
+import airsimulator.model.Airplane;
+
 /**
  *
  * @author Adam
  */
 public class PlayWindow extends JFrame {
     
-    Timer timer;
+    Timer timer, timer200;
     DateFormat dateFormat;
     Date realTime;
     Date playTime;
@@ -61,6 +63,8 @@ public class PlayWindow extends JFrame {
     JMenu file;
     JMenuItem newGame, continueGame, saveGame, saveGameAs, loadGame, loadGameAs,
             exit;
+    
+    Airplane airplane;
    
 
     public PlayWindow() {
@@ -69,6 +73,7 @@ public class PlayWindow extends JFrame {
         super.setLayout(new BorderLayout());
 
         timer = new Timer(1000, new TimeStep());
+        timer200 = new Timer(200, new Animator());
         dateFormat = new SimpleDateFormat("HH:mm:ss");
         realTime = new Date();
         playTime = new Date();
@@ -79,6 +84,7 @@ public class PlayWindow extends JFrame {
         cal.set(Calendar.SECOND, second);   
         playTime = cal.getTime();
         timer.start();
+        timer200.start();
 
         this.menuBar = new JMenuBar();
         this.file = new JMenu("Soubor");
@@ -122,6 +128,8 @@ public class PlayWindow extends JFrame {
         super.setResizable(false);
         super.setVisible(true);
         super.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
+        airplane = new Airplane();
     }
     
     public int getAirSpeedValue(){
@@ -145,6 +153,21 @@ public class PlayWindow extends JFrame {
             valueB.repaint();
         }
     }
+    
+    private class Animator implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            airplane.simulationStep();
+            
+            // překleslení hodnot
+            valueC.setText("" + airplane.getVerticalSpeed());
+            valueD.setText("" + airplane.getHorizontalSpeed());
+            valueE.setText("" + airplane.getGradient());
+            valueF.setText("" + airplane.getAltitude());
+            valueG.setText("" + airplane.getControls().getGradient());
+            valueH.setText("" + airplane.getControls().getPower());
+            
+        }
+    }
 
     private class SidePanel extends JPanel {
 
@@ -165,19 +188,19 @@ public class PlayWindow extends JFrame {
             super.add(valueA);
             super.add(new JLabel("Herní čas", SwingConstants.CENTER));
             super.add(valueB);
-            super.add(new JLabel("COM: ", SwingConstants.CENTER));
+            super.add(new JLabel("Rychlost letu", SwingConstants.CENTER));
             super.add(valueC);
-            super.add(new JLabel("NAV1", SwingConstants.CENTER));
+            super.add(new JLabel("Rychlost stoupání", SwingConstants.CENTER));
             super.add(valueD);
-            super.add(new JLabel("NAV2", SwingConstants.CENTER));
+            super.add(new JLabel("Výška letu", SwingConstants.CENTER));
             super.add(valueE);
-            super.add(new JLabel("DME", SwingConstants.CENTER));
+            super.add(new JLabel("Náklon", SwingConstants.CENTER));
             super.add(valueF);
-            super.add(new JLabel("ADF", SwingConstants.CENTER));
+            super.add(new JLabel("Nastavený sklon", SwingConstants.CENTER));
             super.add(valueG);
-            super.add(new JLabel("RPM", SwingConstants.CENTER));
+            super.add(new JLabel("Tah letadla", SwingConstants.CENTER));
             super.add(valueH);
-            super.add(new JLabel("XPRD", SwingConstants.CENTER));
+            super.add(new JLabel("-", SwingConstants.CENTER));
             super.add(valueI);
 
 
