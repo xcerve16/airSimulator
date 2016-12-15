@@ -49,7 +49,7 @@ import airsimulator.model.Airplane;
  */
 public class PlayWindow extends JFrame implements KeyListener {
     
-    Timer timer, timer200;
+    Timer timer, timer200, timer40;
     DateFormat dateFormat;
     Date realTime;
     Date playTime;
@@ -80,6 +80,7 @@ public class PlayWindow extends JFrame implements KeyListener {
 
         timer = new Timer(1000, new TimeStep());
         timer200 = new Timer(200, new Animator());
+        timer40 = new Timer(40, new Animator());
         dateFormat = new SimpleDateFormat("HH:mm:ss");
         realTime = new Date();
         playTime = new Date();
@@ -91,6 +92,7 @@ public class PlayWindow extends JFrame implements KeyListener {
         playTime = cal.getTime();
         timer.start();
         timer200.start();
+        timer40.start();
 
         this.menuBar = new JMenuBar();
         this.file = new JMenu("Soubor");
@@ -163,41 +165,47 @@ public class PlayWindow extends JFrame implements KeyListener {
     }
     
     private class Animator implements ActionListener {
+        private int divider;
+        @Override
         public void actionPerformed(ActionEvent e) {
-            int value;
-            if(powerKey == KeyEvent.VK_UP) {
-                value = powerControl.getValue();
-                value = (value + 10) / 10 * 10;
-                if(value > 100)
-                    value = 100;
-                powerControl.setValue(value);
-            }
-            else if(powerKey == KeyEvent.VK_DOWN) {
-                value = powerControl.getValue();
-                if(value == 0) {
-                    value = -1;
+            ++divider;
+            
+            if(divider % 5 == 0) {
+                int value;
+                if(powerKey == KeyEvent.VK_UP) {
+                    value = powerControl.getValue();
+                    value = (value + 10) / 10 * 10;
+                    if(value > 100)
+                        value = 100;
+                    powerControl.setValue(value);
                 }
-                else {
-                    value = (value - 10) / 10 * 10;
-                    if(value < -1)
+                else if(powerKey == KeyEvent.VK_DOWN) {
+                    value = powerControl.getValue();
+                    if(value == 0) {
                         value = -1;
+                    }
+                    else {
+                        value = (value - 10) / 10 * 10;
+                        if(value < -1)
+                            value = -1;
+                    }
+                    powerControl.setValue(value);
                 }
-                powerControl.setValue(value);
+
+                airplane.simulationStep();
+
+                // překleslení hodnot - každých 200 ms
+                valueC.setText("  " + airplane.getHorizontalSpeed() + " m/s");
+                valueD.setText("  " + airplane.getVerticalSpeed() + " m/s");
+                valueE.setText("  " + airplane.getAltitude() + " m");
+                valueF.setText("  " + airplane.getGradient() + "°");
+                valueG.setText("  " + airplane.getControls().getGradient());
+                valueH.setText("  " + airplane.getControls().getPower());
             }
             
-            airplane.simulationStep();
-            
-            // překreslení gamePanel
+            // překreslení gamePanel - každých 40 ms
             gamePanel.repaint();
-            
-            // překleslení hodnot
-            valueC.setText("  " + airplane.getHorizontalSpeed() + " m/s");
-            valueD.setText("  " + airplane.getVerticalSpeed() + " m/s");
-            valueE.setText("  " + airplane.getAltitude() + " m");
-            valueF.setText("  " + airplane.getGradient() + "°");
-            valueG.setText("  " + airplane.getControls().getGradient());
-            valueH.setText("  " + airplane.getControls().getPower());
-            
+
         }
     }
 
@@ -254,6 +262,7 @@ public class PlayWindow extends JFrame implements KeyListener {
 
     private class GamePanel extends JPanel {
         private BufferedImage img, plane;
+        int backgroundOffset;
         
         public GamePanel() {
             super.setPreferredSize(new Dimension(500, 380));
@@ -268,11 +277,14 @@ public class PlayWindow extends JFrame implements KeyListener {
         @Override
         public void paint(Graphics g) {
             super.paint(g);
-            Image subimage = img.getSubimage(0, 0, 500, 380); 
+            backgroundOffset += airplane.getHorizontalSpeed()/5;
+            if(backgroundOffset >= 3222)
+                backgroundOffset -= 3222;
+            Image subimage = img.getSubimage(backgroundOffset, 0, 500, 380); 
             g.drawImage(subimage, 0, 0, 500, 380, null);
 
             int altitude = (2700-airplane.getAltitude())/10;
-            g.drawImage(plane, 50, altitude, 170, 70, null);
+            g.drawImage(plane, 30, altitude, 170, 70, null);
         }
     }
 
