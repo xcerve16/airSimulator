@@ -12,11 +12,8 @@ package airsimulator.model;
  */
 public class Airplane
 {
-    private int simulationTime;
     private double verticalSpeed;
-    private double verticalAcceleration;
     private double horizontalSpeed;
-    private double horizontalAcceleration;
     private int gradient;
     private double altitude;
     private Controls controls;
@@ -55,57 +52,52 @@ public class Airplane
         return (int) altitude;
     }
     
-    /* čas simulace v sekundách */
-    public int getSimulationTime()
-    {
-        return simulationTime / 5;
-    }
-    
+       
     /* Provede krok simulace (jakoby 1/5 vteřiny herního času */
     public void simulationStep()
     {
-        ++simulationTime;
         int cGradient = controls.getGradient();
         
-        if(cGradient == 1 && gradient < 30)
-            gradient += 2;
-        else if(cGradient == -1 && gradient > -30)
-            gradient -= 2;
+        if(cGradient == 1) {
+            if(gradient < 30)
+                gradient += 2;
+        }
+        else if(cGradient == -1) {
+            if(gradient > -30)
+                gradient -= 2;
+        }
         
-        computeHorizontalAcceleration();
-        computeVerticalAcceleration();
+        computeHorizontalSpeed();
+        computeVerticalSpeed();
         
-        verticalSpeed += verticalAcceleration / 5;
-        horizontalSpeed += horizontalAcceleration / 5;
-        altitude += verticalSpeed / 5;
     }
     
-    private void computeHorizontalAcceleration()
+    private void computeHorizontalSpeed()
     {
         double acceleration = 5.0;
         
         // akcelerace je dána tahem letadla
         int power = controls.getPower();
         if(power >= 0)
-            acceleration *= power;
+            acceleration *= (double) power / 100;
         else
             acceleration = -1.0;
         
         // snížená o odpor vzduchu, který závisí na rychlosti
-        acceleration -= Math.abs(((double) horizontalSpeed / 270) * acceleration);
+        acceleration -= Math.abs(horizontalSpeed / 270 * 5.0);
         
-        // ovlivnění náklonem (náklon dolů zvyšuje, nahoru snižuje)
-        acceleration *= (double) (-gradient) / 100 + 1;
-        
+          
         // aby nám letadlo necouvalo
-        if(horizontalSpeed <= 0 && acceleration < 0)
+        if(horizontalSpeed <= 0 && acceleration <= 0) {
             acceleration = 0;
+            horizontalSpeed = 0;
+        }
         
-        horizontalAcceleration = acceleration;
+        horizontalSpeed += acceleration;
     }
     
-    private void computeVerticalAcceleration()
-    {
+    private void computeVerticalSpeed()
+    {/*
         double acceleration;
         
         // vliv na vztlak rychlostí letounu
@@ -114,7 +106,7 @@ public class Airplane
         else if(horizontalSpeed < 130)
             acceleration = 0.05 * horizontalSpeed - 3.5;
         else
-            acceleration = 3;
+            acceleration = 0;
         
         // vliv náklonem a letovou výškou letounu
         if(altitude == 0) {
@@ -142,6 +134,24 @@ public class Airplane
             acceleration -= (double) (altitude - 4000) / 100;
         }
         
-        verticalAcceleration = acceleration;
+        verticalSpeed += acceleration;*/
+        double speed;
+        if(horizontalSpeed < 50)
+            speed = -300; // pád střemhlav
+        else if(horizontalSpeed < 120)
+            speed = (gradient*0.02 - 0.1) * horizontalSpeed;
+        else
+            speed = gradient*0.02 * horizontalSpeed;
+        
+        if(altitude <= 0 && speed < 0) {
+            altitude = 0;
+            speed = 0;
+        }
+        else if(altitude > 2500 && speed > 0) {
+            speed -= speed * (altitude - 2500) / 500;
+        }
+        
+        verticalSpeed = speed;
+        altitude += speed / 5;
     }
 }
