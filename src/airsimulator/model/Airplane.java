@@ -16,7 +16,7 @@ public class Airplane
     private double horizontalSpeed;
     private int gradient;
     private double altitude;
-    private Controls controls;
+    private final Controls controls;
     
     public Airplane()
     {
