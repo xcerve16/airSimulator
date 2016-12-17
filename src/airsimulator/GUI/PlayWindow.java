@@ -62,7 +62,7 @@ public class PlayWindow extends JFrame implements KeyListener {
     int second = 0;
 
     GamePanel gamePanel;
-    InfoPanel bottomPanel;
+    BottonPanel bottomPanel;
     SidePanel sidePanel;
 
     JLabel realTimeValue, realTimeName, playTimeValue, playTimeName,
@@ -79,6 +79,7 @@ public class PlayWindow extends JFrame implements KeyListener {
 
     Airplane airplane;
     int powerKey;
+    Color sliderPanelColor = new Color(233,235,236);
 
     public PlayWindow() {
         super("Hrací okno");
@@ -130,13 +131,11 @@ public class PlayWindow extends JFrame implements KeyListener {
         this.menuBar.add(this.help);
 
         this.gamePanel = new GamePanel();
-        this.bottomPanel = new InfoPanel();
+        this.bottomPanel = new BottonPanel();
         this.sidePanel = new SidePanel();
 
-        this.gamePanel.setBackground(Color.RED);
-        this.bottomPanel.setBackground(Color.GRAY);
-        //this.sidePanel.setBackground(Color.LIGHT_GRAY);
-
+        this.bottomPanel.setBackground(sliderPanelColor);
+        
         super.setJMenuBar(this.menuBar);
         super.add(this.gamePanel, BorderLayout.CENTER);
         super.add(this.bottomPanel, BorderLayout.SOUTH);
@@ -365,19 +364,21 @@ public class PlayWindow extends JFrame implements KeyListener {
         }
     }
 
-    private class InfoPanel extends JPanel implements ChangeListener {
+    private class BottonPanel extends JPanel implements ChangeListener {
 
-        public InfoPanel() {
+        public BottonPanel() {
             super.setPreferredSize(new Dimension(500, 170));
             super.setBackground(Color.WHITE);
             super.setLayout(null);
 
             powerControl = new JSlider(SwingConstants.VERTICAL, -1, 100, 0);
+            powerControl.setBackground(sliderPanelColor);
             super.add(powerControl);
             powerControl.setBounds(180, 10, 50, 150);
             powerControl.setFocusable(false);
 
             gradientControl = new JSlider(SwingConstants.HORIZONTAL, -1, 1, 0);
+            gradientControl.setBackground(sliderPanelColor);
             super.add(gradientControl);
             gradientControl.setBounds(240, 60, 70, 50);
             gradientControl.setFocusable(false);
@@ -396,8 +397,7 @@ public class PlayWindow extends JFrame implements KeyListener {
         @Override
         public void paint(Graphics g) {
             super.paint(g);
-            g.setColor(Color.BLACK);
-            g.drawRect(0, 0, 700, 550);
+           
             try {
                 int horizontalSpeed = getHorizontalSpeed() * 180;
                 int verticalSpeed = getVerticalSpeed() * 180;
