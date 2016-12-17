@@ -2,5 +2,7 @@ build/
 dist/
 nbproject/
 nbbuild.xml
+build.xml
+manifest.mf
 
 ~$prezentace.pptx
