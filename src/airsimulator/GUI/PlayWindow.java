@@ -40,7 +40,6 @@ import javax.swing.Timer;
 import javax.swing.event.*;
 
 import airsimulator.model.Airplane;
-import java.awt.GridBagConstraints;
 
 /**
  *
@@ -53,6 +52,8 @@ public class PlayWindow extends JFrame implements KeyListener {
     private final String STATE_FALL = "Pád";
     private final String STATE_CRASH = "Havárie";
 
+    private final String PADDING = "   ";
+
     Timer timer, timer200, timer40;
     DateFormat dateFormat;
     Date realTime;
@@ -61,11 +62,14 @@ public class PlayWindow extends JFrame implements KeyListener {
     int second = 0;
 
     GamePanel gamePanel;
-    InfoPanel infoPanel;
+    InfoPanel bottomPanel;
     SidePanel sidePanel;
 
-    JLabel valueA, valueB, valueC, valueD, valueE, valueF, valueG, valueH,
-            valueI;
+    JLabel realTimeValue, realTimeName, playTimeValue, playTimeName,
+            horizontalSpeedValue, horizontalSpeedName, verticalSpeedValue,
+            verticalSpeedName, altitudeValue, altitudeName, gradientValue,
+            gradientName, gradientControlValue, gradientControlName,
+            powerControlValue, powerControlName, stateValue, stateName;
 
     JMenuBar menuBar;
     JMenu file, help;
@@ -126,16 +130,16 @@ public class PlayWindow extends JFrame implements KeyListener {
         this.menuBar.add(this.help);
 
         this.gamePanel = new GamePanel();
-        this.infoPanel = new InfoPanel();
+        this.bottomPanel = new InfoPanel();
         this.sidePanel = new SidePanel();
 
         this.gamePanel.setBackground(Color.RED);
-        this.infoPanel.setBackground(Color.GRAY);
-        this.sidePanel.setBackground(Color.LIGHT_GRAY);
+        this.bottomPanel.setBackground(Color.GRAY);
+        //this.sidePanel.setBackground(Color.LIGHT_GRAY);
 
         super.setJMenuBar(this.menuBar);
         super.add(this.gamePanel, BorderLayout.CENTER);
-        super.add(this.infoPanel, BorderLayout.SOUTH);
+        super.add(this.bottomPanel, BorderLayout.SOUTH);
         super.add(this.sidePanel, BorderLayout.EAST);
 
         super.setSize(700, 550);
@@ -146,8 +150,8 @@ public class PlayWindow extends JFrame implements KeyListener {
         super.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         this.airplane = new Airplane();
-        powerControl.addChangeListener(infoPanel);
-        gradientControl.addChangeListener(infoPanel);
+        powerControl.addChangeListener(bottomPanel);
+        gradientControl.addChangeListener(bottomPanel);
     }
 
     public int getHorizontalSpeed() {
@@ -181,10 +185,10 @@ public class PlayWindow extends JFrame implements KeyListener {
 
             realTime = new Date();
 
-            valueA.setText("  " + dateFormat.format(realTime));
-            valueB.setText("  " + dateFormat.format(playTime));
-            valueA.repaint();
-            valueB.repaint();
+            realTimeValue.setText("  " + dateFormat.format(realTime));
+            playTimeValue.setText("  " + dateFormat.format(playTime));
+            realTimeValue.repaint();
+            playTimeValue.repaint();
         }
     }
 
@@ -221,12 +225,12 @@ public class PlayWindow extends JFrame implements KeyListener {
                 airplane.simulationStep();
 
                 // překleslení hodnot - každých 200 ms
-                valueC.setText("  " + airplane.getHorizontalSpeed() + " m/s");
-                valueD.setText("  " + airplane.getVerticalSpeed() + " m/s");
-                valueE.setText("  " + airplane.getAltitude() + " m");
-                valueF.setText("  " + airplane.getGradient() + "°");
-                valueG.setText("  " + airplane.getControls().getGradient());
-                valueH.setText("  " + airplane.getControls().getPower());
+                horizontalSpeedValue.setText(PADDING + airplane.getHorizontalSpeed() + " m/s");
+                verticalSpeedValue.setText(PADDING + airplane.getVerticalSpeed() + " m/s");
+                altitudeValue.setText(PADDING + airplane.getAltitude() + " m");
+                gradientValue.setText(PADDING + airplane.getGradient() + "°");
+                gradientControlValue.setText(PADDING + airplane.getControls().getGradient());
+                powerControlValue.setText(PADDING + airplane.getControls().getPower());
 
             }
 
@@ -235,27 +239,27 @@ public class PlayWindow extends JFrame implements KeyListener {
             // aktualizuje polozku stav;
             updateState();
             // aktualizuji se frantovi raficky
-            infoPanel.repaint();
-            
+            bottomPanel.repaint();
+
         }
 
     }
 
     private void updateState() {
         if (this.airplane.getAltitude() == 0) {
-            if(isCrash()){
-                valueI.setText(STATE_CRASH);
-            }else{
-                valueI.setText(STATE_ONEARTH);
+            if (isCrash()) {
+                stateValue.setText(STATE_CRASH);
+            } else {
+                stateValue.setText(STATE_ONEARTH);
             }
         } else if (this.airplane.getVerticalSpeed() < -200) {
-            valueI.setText(STATE_FALL);
-        }else{ 
-            valueI.setText(STATE_ONAIR);
+            stateValue.setText(STATE_FALL);
+        } else {
+            stateValue.setText(STATE_ONAIR);
         }
     }
-    
-    private boolean isCrash(){
+
+    private boolean isCrash() {
         return false;
     }
 
@@ -264,43 +268,69 @@ public class PlayWindow extends JFrame implements KeyListener {
         public SidePanel() {
             super.setPreferredSize(new Dimension(200, 500));
             GridLayout gridLayout = new GridLayout(9, 2, 10, 10);
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.gridx = 10;
             super.setLayout(gridLayout);
-            valueA = new JLabel("  ");
-            valueB = new JLabel("  ");
-            valueC = new JLabel("  135.30");
-            valueD = new JLabel("  110.50");
-            valueE = new JLabel("  13.90");
-            valueF = new JLabel("  14.6");
-            valueG = new JLabel("  619");
-            valueH = new JLabel("  0600");
-            valueI = new JLabel("  OK");
 
-            super.add(new JLabel("  Reálný čas", SwingConstants.LEFT), gbc);
-            super.add(valueA);
-            super.add(new JLabel("  Herní čas", SwingConstants.LEFT));
-            super.add(valueB);
-            super.add(new JLabel("  Rychlost letu", SwingConstants.LEFT));
-            super.add(valueC);
-            super.add(new JLabel("  Rychlost stoupání", SwingConstants.LEFT));
-            super.add(valueD);
-            super.add(new JLabel("  Výška letu", SwingConstants.LEFT));
-            super.add(valueE);
-            super.add(new JLabel("  Skon", SwingConstants.LEFT));
-            super.add(valueF);
-            super.add(new JLabel("  Ovladač sklonu", SwingConstants.LEFT));
-            super.add(valueG);
-            super.add(new JLabel("  Ovladač tahu", SwingConstants.LEFT));
-            super.add(valueH);
-            super.add(new JLabel("  Stav", SwingConstants.LEFT));
-            super.add(valueI);
+            realTimeName = new JLabel(PADDING + "Reálný čas");
+            realTimeValue = new JLabel();
+            playTimeName = new JLabel(PADDING + "Herní čas");
+            playTimeValue = new JLabel();
+            playTimeName.setForeground(Color.WHITE);
+            playTimeValue.setForeground(Color.WHITE);
+            horizontalSpeedName = new JLabel(PADDING + "Rychlost letu");
+            horizontalSpeedValue = new JLabel();
+            verticalSpeedName = new JLabel(PADDING + "Rychlost stoupání");
+            verticalSpeedValue = new JLabel();
+            verticalSpeedName.setForeground(Color.WHITE);
+            verticalSpeedValue.setForeground(Color.WHITE);
+            altitudeName = new JLabel(PADDING + "Výška letu");
+            altitudeValue = new JLabel();
+            gradientName = new JLabel(PADDING + "Skon");
+            gradientValue = new JLabel();
+            gradientName.setForeground(Color.WHITE);
+            gradientValue.setForeground(Color.WHITE);
+            gradientControlName = new JLabel(PADDING + "Ovladač sklonu");
+            gradientControlValue = new JLabel();  
+            powerControlName = new JLabel(PADDING + "Ovladač tahu");
+            powerControlValue = new JLabel();
+            powerControlName.setForeground(Color.WHITE);
+            powerControlValue.setForeground(Color.WHITE);
+            stateName = new JLabel(PADDING + "Stav");
+            stateValue = new JLabel();
+
+            super.add(realTimeName);
+            super.add(realTimeValue);
+            super.add(playTimeName);
+            super.add(playTimeValue);
+            super.add(horizontalSpeedName);
+            super.add(horizontalSpeedValue);
+            super.add(verticalSpeedName);
+            super.add(verticalSpeedValue);
+            super.add(altitudeName);
+            super.add(altitudeValue);
+            super.add(gradientName);
+            super.add(gradientValue);
+            super.add(gradientControlName);
+            super.add(gradientControlValue);
+            super.add(powerControlName);
+            super.add(powerControlValue);
+            super.add(stateName);
+            super.add(stateValue);
         }
 
         @Override
         public void paint(Graphics g) {
             super.paint(g);
+            Graphics componentGraphics = getComponentGraphics(g);
+            Graphics co = componentGraphics.create();
+
+            g.setColor(Color.GRAY);
+            g.fillRect(playTimeName.getLocation().x, playTimeName.getLocation().y, super.getSize().getSize().width, playTimeName.getHeight());
+            g.fillRect(verticalSpeedName.getLocation().x, verticalSpeedName.getLocation().y, super.getSize().getSize().width, verticalSpeedName.getHeight());
+            g.fillRect(gradientName.getLocation().x, gradientName.getLocation().y, super.getSize().getSize().width, gradientName.getHeight());
+            g.fillRect(powerControlName.getLocation().x, powerControlName.getLocation().y, super.getSize().getSize().width, powerControlName.getHeight());
+
+            co.create();
+            super.paintChildren(co);
         }
     }
 
