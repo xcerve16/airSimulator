@@ -40,8 +40,7 @@ import javax.swing.Timer;
 import javax.swing.event.*;
 
 import airsimulator.model.Airplane;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -112,6 +111,7 @@ public class PlayWindow extends JFrame implements KeyListener {
         this.loadGame = new JMenuItem("Načíst");
         this.loadGameAs = new JMenuItem("Načist jako");
         this.exit = new JMenuItem("Ukončit");
+        this.exit.addActionListener(new Exit());
         this.help = new JMenu("Nápověda");
         this.viewHelp = new JMenuItem("Zobrazit nápovědu");
         this.viewHelp.addActionListener(new ViewHelp());
@@ -142,7 +142,7 @@ public class PlayWindow extends JFrame implements KeyListener {
         super.add(this.bottomPanel, BorderLayout.SOUTH);
         super.add(this.sidePanel, BorderLayout.EAST);
 
-        super.setSize(700, 610);
+        super.setSize(750, 610);
         super.setLocation(dim.width / 2 - super.getSize().width / 2, dim.height / 2 - super.getSize().height / 2);
 
         //super.setResizable(false);
@@ -160,6 +160,19 @@ public class PlayWindow extends JFrame implements KeyListener {
 
     public int getVerticalSpeed() {
         return this.airplane.getVerticalSpeed();
+    }
+
+    private class Exit implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            Object[] opt = {"Ano","Ne"};
+            int answer = JOptionPane.showOptionDialog(null,"Opravdu chcete ukončit aplikaci?", 
+                    "Ukončení aplikace",JOptionPane.YES_NO_OPTION,JOptionPane.QUESTION_MESSAGE, null,opt, opt[0]);
+            if( answer == 0){
+                System.exit(1);
+            }
+        }
     }
 
     private class ViewHelp implements ActionListener {
@@ -273,7 +286,7 @@ public class PlayWindow extends JFrame implements KeyListener {
     private class SidePanel extends JPanel {
 
         public SidePanel() {
-            super.setPreferredSize(new Dimension(200, 500));
+            super.setPreferredSize(new Dimension(250, 500));
             GridLayout gridLayout = new GridLayout(9, 2, 10, 10);
             super.setLayout(gridLayout);
 
@@ -434,8 +447,8 @@ public class PlayWindow extends JFrame implements KeyListener {
             drawSomeSpeedValue(airplane.getVerticalSpeed(), g);
             
             g.setColor(Color.WHITE);
-            g.fillRect(495, 5, 190, 160);
-            g.drawImage(logo, 500, 10, 180, 150, null);
+            g.fillRect(525, 5, 190, 160);
+            g.drawImage(logo, 530, 10, 180, 150, null);
         }
 
         private void drawAirSpeedValue(int i, Graphics g) {
