@@ -40,6 +40,8 @@ import javax.swing.Timer;
 import javax.swing.event.*;
 
 import airsimulator.model.Airplane;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 
 /**
  *
@@ -54,7 +56,7 @@ public class PlayWindow extends JFrame implements KeyListener {
 
     private final String PADDING = "   ";
 
-    Timer timer, timer200, timer40;
+    Timer timer, timer40;
     DateFormat dateFormat;
     Date realTime;
     Date playTime;
@@ -87,7 +89,6 @@ public class PlayWindow extends JFrame implements KeyListener {
         super.setLayout(new BorderLayout());
 
         timer = new Timer(1000, new TimeStep());
-        timer200 = new Timer(200, new Animator());
         timer40 = new Timer(40, new Animator());
         dateFormat = new SimpleDateFormat("HH:mm:ss");
         realTime = new Date();
@@ -99,12 +100,12 @@ public class PlayWindow extends JFrame implements KeyListener {
         cal.set(Calendar.SECOND, second);
         playTime = cal.getTime();
         timer.start();
-        timer200.start();
         timer40.start();
 
         this.menuBar = new JMenuBar();
         this.file = new JMenu("Soubor");
         this.newGame = new JMenuItem("Nová hra");
+        this.newGame.addActionListener(new NewGame());
         this.continueGame = new JMenuItem("Pokračovat");
         this.saveGame = new JMenuItem("Uložit");
         this.saveGameAs = new JMenuItem("Uložit jako");
@@ -141,10 +142,10 @@ public class PlayWindow extends JFrame implements KeyListener {
         super.add(this.bottomPanel, BorderLayout.SOUTH);
         super.add(this.sidePanel, BorderLayout.EAST);
 
-        super.setSize(700, 550);
+        super.setSize(700, 610);
         super.setLocation(dim.width / 2 - super.getSize().width / 2, dim.height / 2 - super.getSize().height / 2);
 
-        super.setResizable(false);
+        //super.setResizable(false);
         super.setVisible(true);
         super.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -166,6 +167,17 @@ public class PlayWindow extends JFrame implements KeyListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             HelpWindow helpWindow = new HelpWindow();
+        }
+
+    }
+    
+    private class NewGame implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            PlayWindow playWindow = new PlayWindow();
+            playWindow.addKeyListener(playWindow);
+            dispose();
         }
 
     }
@@ -245,12 +257,11 @@ public class PlayWindow extends JFrame implements KeyListener {
     }
 
     private void updateState() {
-        if (this.airplane.getAltitude() == 0) {
-            if (isCrash()) {
-                stateValue.setText(STATE_CRASH);
-            } else {
-                stateValue.setText(STATE_ONEARTH);
-            }
+        
+        if (airplane.isDestroyed()) {
+            stateValue.setText(STATE_CRASH);
+        } else if (airplane.getAltitude() == 0){
+            stateValue.setText(STATE_ONEARTH);
         } else if (this.airplane.getVerticalSpeed() < -200) {
             stateValue.setText(STATE_FALL);
         } else {
@@ -258,10 +269,7 @@ public class PlayWindow extends JFrame implements KeyListener {
         }
     }
 
-    private boolean isCrash() {
-        return false;
-    }
-
+    
     private class SidePanel extends JPanel {
 
         public SidePanel() {
@@ -335,7 +343,7 @@ public class PlayWindow extends JFrame implements KeyListener {
 
     private class GamePanel extends JPanel {
 
-        private BufferedImage img, plane;
+        private BufferedImage img, plane, destroyedPlane;
         int backgroundOffset;
 
         public GamePanel() {
@@ -344,6 +352,7 @@ public class PlayWindow extends JFrame implements KeyListener {
             try {
                 img = ImageIO.read(new File("resources/background.jpg"));
                 plane = ImageIO.read(new File("resources/airplane.png"));
+                destroyedPlane = ImageIO.read(new File("resources/destroyed_airplane.png"));
             } catch (IOException ex) {
                 Logger.getLogger(PlayWindow.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -351,26 +360,48 @@ public class PlayWindow extends JFrame implements KeyListener {
 
         @Override
         public void paint(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g;
             super.paint(g);
             backgroundOffset += airplane.getHorizontalSpeed() / 5;
             if (backgroundOffset >= 3222) {
                 backgroundOffset -= 3222;
             }
             Image subimage = img.getSubimage(backgroundOffset, 0, 500, 380);
-            g.drawImage(subimage, 0, 0, 500, 380, null);
+            g2.drawImage(subimage, 0, 0, 500, 380, null);
+            
+            
 
-            int altitude = (2700 - airplane.getAltitude()) / 10;
-            g.drawImage(plane, 30, altitude, 170, 70, null);
+            int altitude = (int) ((2765 - airplane.getAltitude()) / 8.5);
+            
+            // naklopení letadla
+            if(airplane.getAltitude() > 1) {
+                g2.rotate(Math.toRadians(-airplane.getGradient()/3), 30, altitude+20);
+            }
+            
+            if(airplane.isDestroyed()) {
+                plane = destroyedPlane;
+            }
+            g2.drawImage(plane, 30, altitude, 170, 70, null);
         }
     }
 
     private class BottonPanel extends JPanel implements ChangeListener {
+        private BufferedImage logo, speedmeter, altimeter;
 
         public BottonPanel() {
             super.setPreferredSize(new Dimension(500, 170));
             super.setBackground(Color.WHITE);
             super.setLayout(null);
-
+            
+            try {
+                logo = ImageIO.read(new File("resources/logo.jpg"));
+                speedmeter = ImageIO.read(new File("resources/airspeed.png"));
+                altimeter = speedmeter;
+                
+            } catch (IOException ex) {
+                Logger.getLogger(PlayWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
             powerControl = new JSlider(SwingConstants.VERTICAL, -1, 100, 0);
             powerControl.setBackground(sliderPanelColor);
             super.add(powerControl);
@@ -398,31 +429,24 @@ public class PlayWindow extends JFrame implements KeyListener {
         public void paint(Graphics g) {
             super.paint(g);
            
-            try {
-                int horizontalSpeed = getHorizontalSpeed() * 180;
-                int verticalSpeed = getVerticalSpeed() * 180;
-                horizontalSpeed /= 100;
-                verticalSpeed /= 100;
-                drawAirSpeedValue(horizontalSpeed, g);
-                drawSomeSpeedValue(verticalSpeed, g);
-            } catch (IOException ex) {
-                System.err.println(ex.getMessage());
-            }
-
-            try {
-                BufferedImage img = ImageIO.read(new File("resources/logo.jpg"));
-                g.setColor(Color.WHITE);
-                g.fillRect(495, 5, 190, 160);
-                g.drawImage(img, 500, 10, 180, 150, null);
-            } catch (IOException ex) {
-            }
+            
+            drawAirSpeedValue(airplane.getHorizontalSpeed(), g);
+            drawSomeSpeedValue(airplane.getVerticalSpeed(), g);
+            
+            g.setColor(Color.WHITE);
+            g.fillRect(495, 5, 190, 160);
+            g.drawImage(logo, 500, 10, 180, 150, null);
         }
 
-        private void drawAirSpeedValue(int i, Graphics g) throws IOException {
-            BufferedImage img = ImageIO.read(new File("resources/airspeed.png"));
+        private void drawAirSpeedValue(int i, Graphics g) {
             Graphics2D g2d = (Graphics2D) g.create();
-            g2d.drawImage(img, 10, 10, 150, 150, null);
+            g2d.drawImage(speedmeter, 10, 10, 150, 150, null);
             g2d.setColor(Color.WHITE);
+            
+            i = i * 180 / 100;
+            if(i > 350) {
+                i = 350;
+            }
 
             int x = 80;
             int y = 40;
@@ -438,53 +462,15 @@ public class PlayWindow extends JFrame implements KeyListener {
             g2d.dispose();
         }
 
-        private void drawSomeSpeedValue(int i, Graphics g) throws IOException {
-            BufferedImage img = ImageIO.read(new File("resources/airspeed.png"));
+        private void drawSomeSpeedValue(int i, Graphics g){
             Graphics2D g2d = (Graphics2D) g.create();
-            g2d.drawImage(img, 330, 10, 150, 150, null);
+            g2d.drawImage(altimeter, 330, 10, 150, 150, null);
             g2d.setColor(Color.WHITE);
-
+            
+            i = i * 180 / 100;
+            i = Math.abs(i);
+            
             int x = 400;
-            int y = 40;
-            int w = 7;
-            int h = 50;
-
-            Rectangle rect1 = new Rectangle(x, y, w, h);
-            g2d.rotate(Math.toRadians(i), rect1.x + w, rect1.y + h);
-            g2d.setColor(Color.RED);
-            g2d.fill(rect1);
-            g2d.setColor(Color.WHITE);
-            g2d.draw(rect1);
-            g2d.dispose();
-        }
-
-        private void drawAnySpeedValue(int i, Graphics g) throws IOException {
-            BufferedImage img = ImageIO.read(new File("resources/airspeed.png"));
-            Graphics2D g2d = (Graphics2D) g.create();
-            g2d.drawImage(img, 170, 10, 150, 150, null);
-            g2d.setColor(Color.WHITE);
-
-            int x = 240;
-            int y = 40;
-            int w = 7;
-            int h = 50;
-
-            Rectangle rect1 = new Rectangle(x, y, w, h);
-            g2d.rotate(Math.toRadians(i), rect1.x + w, rect1.y + h);
-            g2d.setColor(Color.RED);
-            g2d.fill(rect1);
-            g2d.setColor(Color.WHITE);
-            g2d.draw(rect1);
-            g2d.dispose();
-        }
-
-        private void drawControls(int i, Graphics g) throws IOException {
-            BufferedImage img = ImageIO.read(new File("resources/airspeed.png"));
-            Graphics2D g2d = (Graphics2D) g.create();
-            g2d.drawImage(img, 170, 10, 150, 150, null);
-            g2d.setColor(Color.WHITE);
-
-            int x = 240;
             int y = 40;
             int w = 7;
             int h = 50;

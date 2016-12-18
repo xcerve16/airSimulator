@@ -17,6 +17,7 @@ public class Airplane
     private int gradient;
     private double altitude;
     private final Controls controls;
+    private boolean destroyed = false;
     
     public Airplane()
     {
@@ -43,33 +44,38 @@ public class Airplane
     /* Aktuální horizontální rychlost (v m/s) */
     public int getHorizontalSpeed()
     {
-        return (int) horizontalSpeed;
+        return destroyed ? 0 : (int) horizontalSpeed;
     }
     
     /* Výška letu letadla */
     public int getAltitude()
     {
-        return (int) altitude;
+        return destroyed ? 0 :(int) altitude;
     }
     
+    /* Je letadlo zničeno pádem? */
+    public boolean isDestroyed()
+    {
+        return destroyed;
+    }    
        
     /* Provede krok simulace (jakoby 1/5 vteřiny herního času */
     public void simulationStep()
     {
         int cGradient = controls.getGradient();
-        
-        if(cGradient == 1) {
-            if(gradient < 30)
-                gradient += 2;
-        }
-        else if(cGradient == -1) {
-            if(gradient > -30)
-                gradient -= 2;
+        if(!destroyed) {
+            if(cGradient == 1) {
+                if(gradient < 30)
+                    gradient += 2;
+            }
+            else if(cGradient == -1) {
+                if(gradient > -30)
+                    gradient -= 2;
         }
         
         computeHorizontalSpeed();
         computeVerticalSpeed();
-        
+        }
     }
     
     private void computeHorizontalSpeed()
@@ -97,44 +103,7 @@ public class Airplane
     }
     
     private void computeVerticalSpeed()
-    {/*
-        double acceleration;
-        
-        // vliv na vztlak rychlostí letounu
-        if(horizontalSpeed < 70)
-            acceleration = 0.1 * horizontalSpeed - 5;
-        else if(horizontalSpeed < 130)
-            acceleration = 0.05 * horizontalSpeed - 3.5;
-        else
-            acceleration = 0;
-        
-        // vliv náklonem a letovou výškou letounu
-        if(altitude == 0) {
-            if(acceleration < 0)
-                acceleration = 0;
-        }
-        else if(altitude < 300) {
-            if(gradient >= 0)
-                acceleration = (double) gradient * 0.1 + 0.3;
-            else
-                acceleration = (double) gradient * 0.167;            
-        }
-        else if(altitude < 4000) {
-            if(gradient >= 0)
-                acceleration = (double) gradient * 0.1;
-            else
-                acceleration = (double) gradient * 0.167; 
-        }
-        else {
-            if(gradient >= 0)
-                acceleration = (double) gradient * 0.1;
-            else
-                acceleration = (double) gradient * 0.167;
-            
-            acceleration -= (double) (altitude - 4000) / 100;
-        }
-        
-        verticalSpeed += acceleration;*/
+    {
         double speed;
         if(horizontalSpeed < 50)
             speed = -300; // pád střemhlav
@@ -142,6 +111,10 @@ public class Airplane
             speed = (gradient*0.02 - 0.1) * horizontalSpeed;
         else
             speed = gradient*0.02 * horizontalSpeed;
+        
+        if(altitude > 1 && (altitude + speed) < -11) {
+            destroyed = true;
+        }
         
         if(altitude <= 0 && speed < 0) {
             altitude = 0;
