@@ -145,7 +145,7 @@ public class PlayWindow extends JFrame implements KeyListener {
         super.setSize(750, 610);
         super.setLocation(dim.width / 2 - super.getSize().width / 2, dim.height / 2 - super.getSize().height / 2);
 
-        //super.setResizable(false);
+        super.setResizable(false);
         super.setVisible(true);
         super.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -409,7 +409,7 @@ public class PlayWindow extends JFrame implements KeyListener {
             try {
                 logo = ImageIO.read(new File("resources/logo.jpg"));
                 speedmeter = ImageIO.read(new File("resources/airspeed.png"));
-                altimeter = speedmeter;
+                altimeter = ImageIO.read(new File("resources/altimeter.png"));;
                 
             } catch (IOException ex) {
                 Logger.getLogger(PlayWindow.class.getName()).log(Level.SEVERE, null, ex);
@@ -444,7 +444,7 @@ public class PlayWindow extends JFrame implements KeyListener {
            
             
             drawAirSpeedValue(airplane.getHorizontalSpeed(), g);
-            drawSomeSpeedValue(airplane.getVerticalSpeed(), g);
+            drawVerticalSpeedValue(airplane.getVerticalSpeed(), g);
             
             g.setColor(Color.WHITE);
             g.fillRect(525, 5, 190, 160);
@@ -475,22 +475,33 @@ public class PlayWindow extends JFrame implements KeyListener {
             g2d.dispose();
         }
 
-        private void drawSomeSpeedValue(int i, Graphics g){
+        private void drawVerticalSpeedValue(int i, Graphics g){
             Graphics2D g2d = (Graphics2D) g.create();
             g2d.drawImage(altimeter, 330, 10, 150, 150, null);
             g2d.setColor(Color.WHITE);
             
             i = i * 180 / 100;
-            i = Math.abs(i);
             
             int x = 400;
             int y = 40;
             int w = 7;
             int h = 50;
 
-            Rectangle rect1 = new Rectangle(x, y, w, h);
-            g2d.rotate(Math.toRadians(i), rect1.x + w, rect1.y + h);
+            // kontrolka směru pohybu (nahoru nebo dolů)
             g2d.setColor(Color.RED);
+            if(i > 0) {
+                g2d.fillOval(458, 23, 10, 10);
+            } else if (i < 0) {
+                g2d.fillOval(458, 136, 10, 10);
+            }
+            
+            
+            i = Math.abs(i);
+            if(i > 350) {
+                i = 350;
+            }
+            Rectangle rect1 = new Rectangle(x, y, w, h);
+            g2d.rotate(Math.toRadians(i), rect1.x + w, rect1.y + h);            
             g2d.fill(rect1);
             g2d.setColor(Color.WHITE);
             g2d.draw(rect1);
